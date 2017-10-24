@@ -1,6 +1,11 @@
 README.txt
 v1.0
 
+author: mrhydden@thevoid
+
+Project repository: https://github.com/sgsmg/combinator
+
+
 PROJECT DIAGRAM (MODIFICATION SUGGESTIONS AVAILABLE)
 ----------------------------------------------------
 
@@ -100,30 +105,3 @@ Pseudocódigo aproximado:
             END_SWITCH
 
         END_PROCEDURE_combinator
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
