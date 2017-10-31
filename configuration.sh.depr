@@ -1,17 +1,35 @@
 #!/bin/bash
 
+# Formato de uso:
+#   configuration.sh [-l newlength | -s path/to/stats/file]
+#
+# Valores de retorno
+#   0   Exito
+#   1   Formato de argumentos no adecuado
+#   114 Faltan permisos de lectura. 114 = r (ASCII)
+#   119 Faltan permisos de escritura. 119 = w (ASCII)
+#   120 Faltan permisos de ejecucion. 120 = x (ASCII)
+#   
+
 CONFIG_FILE='conf.cfg'
 STATS_FILE='estadisticas.txt'
-CONFIG_FILE_STATS_FORMAT_REGEX='ESTADISTICAS=.*estadisticas.txt$'
-CONFIG_FILE_STATS_MODIFIED_FORMAT=
-#Uncomment to use replacement for #ZZZ
-STATS_LINE=2
+NEW_LENGTH=
+NEW_STATS_PATH=
+FLAGS=
 
-
-if [ $# -ge 1 -a $# -le 2 ]; then
-# La comprobacion de los limites del numero queda para el modulo superior
+if [ $# -ge 2 -a $# -le 3 ]; then
+# La comprobacion de los limites de la longitud queda para el modulo superior
 # Este coge cualquier cadena numerica de cualquier longitud entre 1 y 9
 # Asi seria facilmente modificable si se quiere extender el programa
+
+    # Esta condicion no es elegante, pero las combinaciones son pocas,
+    # y no se puede correr el riesgo de usar regex extendidas y que no
+    # funcione sobre el servidor
+    if [[ $1 =~ -l || $1 =~ -s || $1 =~ -sl || $1 =~ -ls ]]; then
+        FLAGS=$1
+
+    else
+        exit
     if [[ $1 =~ [1-9] ]]; then
 
         NEW_LENGTH=$1
@@ -22,7 +40,7 @@ if [ $# -ge 1 -a $# -le 2 ]; then
                 NEW_PATH=$2
                 if ! [ -w "$PWD" ]; then
                 # Faltan permisos en carpeta actual
-                    exit 3
+                    exit 119
                 fi
 
                 if ! [ -e "$PWD/$CONFIG_FILE" ]; then
@@ -32,7 +50,7 @@ if [ $# -ge 1 -a $# -le 2 ]; then
                 
                 if ! [ -w "$PWD/$CONFIG_FILE" ]; then
                 # Faltan permisos para el fichero
-                    exit 4
+                    exit 119
                 fi
 
                 echo "LONGITUD=$NEW_LENGTH" > "$PWD/$CONFIG_FILE"
@@ -48,7 +66,7 @@ if [ $# -ge 1 -a $# -le 2 ]; then
 
             if ! [ -w "$PWD" ]; then
             # Faltan permisos en carpeta actual
-                exit 3
+                exit 119
             fi
 
             if ! [ -e "$PWD/$CONFIG_FILE" ]; then
@@ -58,7 +76,7 @@ if [ $# -ge 1 -a $# -le 2 ]; then
             
             if ! [ -w "$PWD/$CONFIG_FILE" ]; then
             # Faltan permisos para el fichero
-                exit 4
+                exit 119
             fi
             
             #ZZZ
@@ -76,7 +94,7 @@ if [ $# -ge 1 -a $# -le 2 ]; then
             #echo "$STATS_PATH" >> "$PWD/$CONFIG_FILE"
 
             # This should work as well as a replacement from #ZZZ
-             sed -i "$STATS_LINEs/.*/replacement-line/" "$PWD/$CONFIG_FILE"
+             sed -i "$STATS_LINEs/.*/$2/" "$PWD/$CONFIG_FILE"
         fi
 
     else
@@ -88,7 +106,7 @@ if [ $# -ge 1 -a $# -le 2 ]; then
 
 elif [ $# -gt 2 ]; then
 # Uso erroneo
-    exit 2
+    exit 1
 
 else
 # Sin argumentos, se considera que no se desean cambios
