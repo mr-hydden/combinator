@@ -1,17 +1,13 @@
 #!/bin/bash
 
 # Usage:
-#   configuration.sh [-l newlength | -s path/to/stats/file]
+#   config.sh [-l newlength | -s path/to/stats/file]
 #
 # RETURN VALUES
-#   0   Success
-#   1   Wrong arguments' format
-#   114 Lacking read permissions. 114 = r (ASCII)
-#   119 Lacking write permissions. 119 = w (ASCII)
-#   120 Lacking execution permissions. 120 = x (ASCII)
+#   0 si tiene exito
 #   
 
-# Constants
+# Constantes
 CONFIG_FILE='conf.cfg'
 CONFIG_FILE_PATH=$PWD
 STATS_FILE='estadisticas.txt'
@@ -24,7 +20,7 @@ declare -i WX_PERM=2#011   # -wx
 declare -i RX_PERM=2#101   # r-x
 declare -i RWX_PERM=2#111  # rwx
 
-# Input variables
+# Variables de entrada
 NEW_STATS_FILE=
 NEW_LENGTH=
 
@@ -231,14 +227,15 @@ NEW_LENGTH=
 # ***********************************************
 # changePath()                                  *
 # ***********************************************
-# Function to change path in configuration file *
+# Funcion que modifica la ruta al fichero de    *
+# estadisticas en el fichero de configuracion   *
 #                                               *
             function changePath() {                         
 # ***********************************************
 
-    # Needs 2 mandatory arguments: a path to a file and a string
-    # Usage: changePath FILE STRING
-    # Changes the configuration file FILE, which has a format as follows:
+    # Requiere 2 argumentos obligatorios: una ruta a un fichero y una cadena
+    # Uso: changePath FILE STRING
+    # Cambia el fichero FILE, que tiene el siguiente formato
     #
     # File structure
     #==============================================================
@@ -247,17 +244,17 @@ NEW_LENGTH=
     #^D 
     #==============================================================
     #
-    # /path/to/statistics/file will become STRING
+    # /path/to/statistics/file se cambiara por STRING
     #
-    # This function testes if configuration file exists, and creates it
-    # if it does not. However, it does not check validity of STRING
+    # Esta funcion espera un fichero con permisos de escritura y lectura. 
+    # No comprueba la validez de la nueva ruta STRING
     #
     # Return values:
     #   0 si tiene exito
     #
     #   1 si los argumentos son invalidos (en numero)
     #
-    #   2 si el fichero de configuracion no existe y no se puede crear
+    #   3 si el fichero de configuracion no existe y no se puede crear
 
     local CONFIG_FILE=
     local NEW_STATS_FILE=
@@ -266,6 +263,9 @@ NEW_LENGTH=
 
         CONFIG_FILE=$1
         NEW_STATS_FILE=$2
+
+        # ESTO PARA EL MODULO SUPERIOR ------------------------------------------------------------------
+
         # Separamos la ruta y el nombre del fichero, para poder trabajar con
         # testperm y comprobar los permisos por separado
         CONFIG_FILE_PATH=`echo $CONFIG_FILE | sed -n 's:\(.*\)/.*$:\1:p'`
@@ -292,6 +292,7 @@ NEW_LENGTH=
                 return 2 # Fichero de configuracion no se puede crear
             fi
         fi
+        # ----------------------------------------------------------------------------------------------
 
         sed -i "2s:ESTADISTICAS=.*:ESTADISTICAS=$NEW_STATS_FILE:" \
         "$CONFIG_FILE_PATH"/"$CONFIG_FILE_NAME"
@@ -305,36 +306,37 @@ NEW_LENGTH=
 
 
 
-# *********************************************** # REVISAR Y COMPLETAR <---------------------------------------------------
+# ***********************************************
 # changeLength()                                *
 # ***********************************************
-# Function to change length in config file      *
+# Funcion que modifica la longitud por defecto  *
+# en el fichero de configuracion                *
 #                                               *
             function changeLength() {                         
 # ***********************************************
 
-    # Needs 2 mandatory arguments: a path to a file and a string
-    # Usage: changeLength FILE N
-    # Changes the configuration file FILE, which has a format as follows:
+    # Requiere 2 argumentos obligatorios: una ruta a un fichero y un entero N
+    # Uso: changePath FILE N
+    # Cambia el fichero FILE, que tiene el siguiente formato
     #
     # File structure
     #==============================================================
-    #LONGITUD=N
+    #LONGITUD=K
     #ESTADISTICAS=/path/to/statistics/file
     #^D 
     #==============================================================
     #
-    # /path/to/statistics/file will become STRING
+    # K se cambia por N
     #
-    # This function testes if configuration file exists, and creates it
-    # if it does not. However, it does not check validity of STRING
+    # Esta funcion espera un fichero con permisos de escritura y lectura. 
+    # Si N no es un numero entero, devuelve error y no cambia nada.
     #
     # Return values:
     #   0 si tiene exito
     #
     #   1 si los argumentos son invalidos (en numero)
     #
-    #   2 si el fichero de configuracion no existe y no se puede crear
+    #   3 si el fichero de configuracion no existe y no se puede crear
 
     local CONFIG_FILE=
     local NEW_LENGTH=
@@ -342,7 +344,14 @@ NEW_LENGTH=
     if [ $# -eq 2 ]; then
 
         CONFIG_FILE=$1
-        NEW_LENGTH=$2
+        if [[ $2 =~ [0-9] ]]; then
+            NEW_LENGTH=$2
+        else
+            return 1
+        fi
+
+        # ESTO PARA EL MODULO SUPERIOR ---------------------------------------------------------------
+
         # Separamos la ruta y el nombre del fichero, para poder trabajar con
         # testperm y comprobar los permisos por separado
         CONFIG_FILE_PATH=`echo $CONFIG_FILE | sed -n 's:\(.*\)/.*$:\1:p'`
@@ -369,8 +378,10 @@ NEW_LENGTH=
                 return 2 # Fichero de configuracion no se puede crear
             fi
         fi
-
-        sed -i "2s:LONGITUD=.*:LONGITUD=$NEW_LENGTH:" \
+        
+        # -----------------------------------------------------------------------------------------------
+      
+        sed -i "s:LONGITUD=.*:LONGITUD=$NEW_LENGTH:" \
         "$CONFIG_FILE_PATH"/"$CONFIG_FILE_NAME"
 
         return 0
@@ -379,3 +390,12 @@ NEW_LENGTH=
         return 1 # Numero de argumentos no valido
     fi
 }
+
+
+# *********************************************** # Este es el hipotetico modulo superior, debera llamar a changeLength
+# changeConfig()                                * # o changePath segun proceda y pasarles argumentos comprobados
+# ***********************************************
+# Function to change length in config file      *
+#                                               *
+            function changeConfig() {                         
+# ***********************************************
