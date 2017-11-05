@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Author: Samuel Gomez Sanchez
+# Date: 05/11/17
+# v2.0
+
 # Usage:
 #   chconf.sh CONFIGURATION_FILE [-l newlength | -s path/to/stats/file]
 #
