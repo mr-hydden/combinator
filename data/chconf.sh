@@ -419,7 +419,7 @@ declare -i RWX_PERM=2#111  # rwx
     #
     #   3 error con el fichero (no existe y no se puede crear)
     #
-    #   4 formato de fichero incorrecto
+    #   4 formato de fichero de configuracion incorrecto
 
     # Esta funcion y aquellas a las que llama presentan redundancias en
     # algunas comprobaciones: para hacer el diseño un poco mas robusto se
