@@ -1,5 +1,50 @@
 #!/bin/bash
 
+#******************************************************************************#
+#                               updatestats.sh                                 #
+#                                                                              #
+# Incorpora una nueva entrada con los datos de una partida al fichero de       #
+# estadisticas.
+#                                                                              #
+#******************************************************************************#
+
+# Author: Samuel Gomez Sanchez
+# Date: 06/11/17
+# v3.0
+
+# Usage:
+#   updatestats.sh STATS_FILE A B C D E F G
+#
+# donde:
+#   A = PID del proceso del juego (Numero entero)
+#   B = Fecha de la partida (Cadena de texto)
+#   C = Hora de la partida (Cadena de texto)
+#   D = Numero de intentos en la partida (Numero entero)
+#   E = Duracion de la partida en segundos (Numero entero)
+#   F = Longitud de la combinacion (Numero entero)
+#   G = Combinacion secreta del juego
+#
+# (en realidad la unica LIMITACION es el NUMERO DE LOS ARGUMENTOS. Internamente
+# trabaja con cadenas de texto, y las escribe en cualquier caso en el orden 
+# en que se reciban).
+#
+    # Exit status
+    #
+    #   0 si tiene exito
+    #
+    #   1 si los argumentos son erroneos
+    #
+    #   2 si hay algun problema con el fichero
+
+
+
+# Constantes
+
+N_FIELDS=7
+
+STATS_FILE_PATH_GLOBAL=$PWD
+STATS_FILE_GLOBAL='estadisticas.txt'
+
 declare -i N_PERM=2#000    # ---
 declare -i R_PERM=2#100    # r--
 declare -i W_PERM=2#010    # -w-
@@ -9,7 +54,18 @@ declare -i WX_PERM=2#011   # -wx
 declare -i RX_PERM=2#101   # r-x
 declare -i RWX_PERM=2#111  # rwx
 
-N_FIELDS=7
+
+
+
+
+
+#******************************************************************************#
+#                                   FUNCIONES                                  #
+#******************************************************************************#
+#                                   perm                                       #
+#                                   init_stats_file                            #
+#******************************************************************************#
+
 
 # ***********************************************
 # perm                                          *
@@ -35,14 +91,14 @@ N_FIELDS=7
         local FILE=$1
         local PERMISSIONS=0
 
+        # Si no existe el fichero, devolvemos error
         if ! [[ -e "$FILE" ]]; then
             echo 8 # 2#1000, valor invalido; fichero no existe
             return 2
         fi
 
-
+        # Calculamos los permisos sumando el valor de cada variable de permisos
         if [ -r "$FILE" ]; then
-            # Los permisos hay que ponerlos negados porque indican que permisos
             (( PERMISSIONS += $R_PERM )) # Incluimos permiso r--
         fi
         if [ -w "$FILE" ]; then
@@ -52,7 +108,7 @@ N_FIELDS=7
             (( PERMISSIONS += $X_PERM )) # Incluimos permiso --x
         fi
 
-        echo $PERMISSIONS
+        echo $PERMISSIONS # Devolvemos con echo para shell substitution
         return 0
 
     else
@@ -80,15 +136,25 @@ N_FIELDS=7
     #
     #   3 si no se puede modificar el fichero
     #        
-
-    local STATS_FILE_PATH=
-    local STATS_FILE_NAME=
+    
+    local STATS_FILE=$1
+    local STATS_FILE_PATH
+    local STATS_FILE_NAME
 
     if [ $# -eq 1 ]; then
 
-        STATS_FILE_PATH=$(echo $1 | sed -n 's:\(.*\)/.*$:\1:p') # <-------------------- SI HAY TIEMPO, MODIFICAR init_conf_file PARA QUE RECIBA
-        STATS_FILE_NAME=$(echo $1 | sed -n 's:.*/\(.*\)$:\1:p') # <-------------------- UN SOLO ARGUMENTO, AL IGUAL QUE ESTA
+        # Separamos directorio padre y fichero para trabajar por separado
+        STATS_FILE_PATH=$(echo $STATS_FILE | sed -n 's:\(.*\)/.*$:\1:p')
+        STATS_FILE_NAME=$(echo $STATS_FILE | sed -n 's:.*/\(.*\)$:\1:p')
 
+        # Si sed no separa adecuadamente, toma $1 como un nombre de fichero y
+        # lo crea en el directorio $STATS_FILE_PATH_GLOBAL
+        if [[ -z "$STATS_FILE_NAME" || -z "$STATS_FILE_PATH" ]];then
+            STATS_FILE_NAME=$STATS_FILE
+            STATS_FILE_PATH=$STATS_FILE_PATH_GLOBAL
+        fi
+
+        # Si el directorio no existe, lo creamos, con todos los intermedios
         if ! [[ -e "$STATS_FILE_PATH" ]]; then
             mkdir -p "$STATS_FILE_PATH" &> /dev/null
             if (( $? != 0 )); then  # Si el directorio no se creo correctamente
@@ -96,6 +162,8 @@ N_FIELDS=7
             fi
         fi
         
+        # Comprobamos que podemos trabajar en el directorio que contiene
+        # el fichero de configuracion
         declare -i local DIR_PERM=$(perm "$STATS_FILE_PATH") 
         if (( $DIR_PERM == $RWX_PERM )); then
 
@@ -105,21 +173,16 @@ N_FIELDS=7
                 touch "$STATS_FILE_NAME"   # Como tenemos permisos W, se crea sin
                                             # problema
             fi
-
-            declare -i local FIL_PERM=$(perm "$STATS_FILE_NAME") 
-                                                    # En principio
-                                                    # no hace falta comprobar
-                                                    # el valor de retorno,
-                                                    # se los he proporcionado
-                                                    # mas como una medida de 
-                                                    # seguridad, o en caso
-                                                    # de necesitar debugging
                 
-            if ! (( (( $FIL_PERM & $W_PERM )) != 0 )); then
-                return 3 # No podemos escribir en el fichero
-            else
-                return 0
-            fi
+            # El modulo superior debe realizar la comprobacion 
+            # de que se puede escribir en el fichero iniciado, 
+            # ya que no conocemos el umask del sistema
+            #
+            #if ! (( (( $FIL_PERM & $W_PERM )) != 0 )); then
+            #    return 3 # No podemos escribir en el fichero
+            #else
+            #    return 0
+            #fi
 
         else
             return 3 # No hay permisos en el directorio
@@ -131,48 +194,51 @@ N_FIELDS=7
 }
 
 
-# ***********************************************
-# add_stats()                                   *
-# ***********************************************
-# Funcion que escribe los datos de una partida  *
-# en el fichero de estadisticas
-#                                               *
-            function add_stats() {                         
-# ***********************************************
+#******************************************************************************#
+#                               PROGRAMA PRINCIPAL                             #
+#                                 updatestats.sh                               #
+#******************************************************************************#
 
-    # Usage: add_stats FILE ${STATS_ARRAY[@]}
+    # Exit status
     #
-    # Return values
     #   0 si tiene exito
     #
     #   1 si los argumentos son erroneos
     #
     #   2 si hay algun problema con el fichero
 
-    if [ $# -eq 8 ]; then
-    
-        local STATS_FILE=$1
-        local GAME_PID=$2
-        local GAME_DATE=$3
-        local GAME_TIME=$4
-        local NO_ATTEMPTS=$5
-        local GAME_DURATION=$6
-        local COMB_LENGTH=$7
-        local COMBINATION=$8
+# Debe haber 8 argumentos obligatoriamente
+if [ $# -eq 8 ]; then
 
-        if ! [[ -e $STATS_FILE ]]; then
-            init_stats_file $STATS_FILE
-            if (( $? != 0 )); then
-                return 2
-            fi
+# Recogemos los argumentos en variables de nombre mas legible
+    STATS_FILE=$1
+    GAME_PID=$2
+    GAME_DATE=$3
+    GAME_TIME=$4
+    NO_ATTEMPTS=$5
+    GAME_DURATION=$6
+    COMB_LENGTH=$7
+    COMBINATION=$8
+
+    # Si el fichero no existe, lo creamos
+    if ! [[ -e $STATS_FILE ]]; then
+        init_stats_file $STATS_FILE
+        if (( $? != 0 )); then
+            exit 2 # Error con el fichero
         fi
-
-        echo    "$GAME_PID|$GAME_DATE|$GAME_TIME|$NO_ATTEMPTS|$GAME_DURATION|\
-$COMB_LENGTH|$COMBINATION" | cat >> "$STATS_FILE"
-
-    else
-        return 1;
     fi
-}
 
-add_stats $@
+    # Comprobamos permisos del fichero; si no se puede escribir, 
+    # termina con error
+    declare -i FIL_PERM=$(perm "$STATS_FILE_NAME") 
+    if ! (( (( $FIL_PERM & $W_PERM )) != 0 )); then
+        exit 2 # No podemos escribir en el fichero
+    else
+        echo "$GAME_PID|$GAME_DATE|$GAME_TIME|$NO_ATTEMPTS|$GAME_DURATION|\
+$COMB_LENGTH|$COMBINATION" | cat >> "$STATS_FILE"
+        exit 0
+    fi
+    
+else
+    exit 1; # Error en el formato de los argumentos
+fi

@@ -1,22 +1,37 @@
 #!/bin/bash
 
-# Script de para el menu de configuracion
-# 
-# Usage: conf_if.sh GLOBAL_ARRAY
+#******************************************************************************#
+#                                   conf_if.sh                                 #
+#                                                                              #
+# Muestra una interfaz de configuracion y devuelve datos introducidos por el   #
+# usuario.
+#                                                                              #
+#******************************************************************************#
+
+# Author: Samuel Gomez Sanchez
+# Date: 07/11/17
+# v1.1
+
+# Usage:
+#   conf_if.sh
 #
-# El script muestra un menu y obtiene la informacion necesaria para realizar
-# los cambios solicitados por el usuario; los devuelve en un 
+    # Exit status
+    #
+    #   0
+    #
+    
+# Devuelve para recoger con shell substitution dos parametros:
+#       LENGTH STATSFILE
+# en ese orden. Si alguno no se va a cambiar, se devuelve vacio.
 
 
 
 
-# CONSTANTES
+# Constantes
 MIN_LEN=2
 MAX_LEN=6
 STATS_FILE_GLOBAL='estadisticas.txt'
 
-# VARIABLES
-RETURN_ARRAY=$1
 
 clear
 
@@ -105,6 +120,7 @@ do
                 read -p '          Introduzca un fichero valido: ' STATFILE
             done
 
+# ESTO ES TAREA DEL CONTROLADOR, PERO COMPROBADO QUE FUNCIONA
             # Llevamos a cabo el cambio de fichero de estadisticas
 #            "$(dirname $PWD)/$CHCONF" "$(dirname $PWD)/$CONFIG_FILE_GLOBAL" \
 #            -s "$STATFILE"
@@ -113,8 +129,7 @@ do
         ;;
     
         c)
-            RETURN_ARRAY[0]=$LENGTH
-            RETURN_ARRAY[1]=$STATFILE
+            echo "$LENGTH $STATFILE"
         ;;
     esac
 done

@@ -1,5 +1,28 @@
 #!/bin/bash
 
+#******************************************************************************#
+#                                   group_if.sh                                #
+#                                                                              #
+# Muestra los miembros del grupo.                                              #
+#                                                                              #
+#******************************************************************************#
+
+# Author: Samuel Gomez Sanchez
+# Date: 02/11/17
+# v1.0
+
+# Usage:
+#   group_if.sh
+#
+    # Exit status
+    #
+    #   0
+
+
+
+
+# Variables
+
 RELEASE_DATE=$(date +'%b-%Y')
 VERSION='v1.0'
 
@@ -27,6 +50,6 @@ echo
 echo
 echo
 echo
-read -p 'Pulse RETURN para volver al menu principal...' A
+read -n 1 -p 'Pulse cualquier tecla para volver al menu principal...' A
 
 exit 0
