@@ -181,7 +181,7 @@ declare -i RWX_PERM=2#111  # rwx
 #                                               *
             function init_conf_file() {                         
 # **********************************************
-#
+
     # Return:
     #   0 si tiene exito
     #

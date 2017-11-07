@@ -1,8 +1,22 @@
 #!/bin/bash
 
+# Script de para el menu de configuracion
+# 
+# Usage: conf_if.sh GLOBAL_ARRAY
+#
+# El script muestra un menu y obtiene la informacion necesaria para realizar
+# los cambios solicitados por el usuario; los devuelve en un 
+
+
+
+
+# CONSTANTES
 MIN_LEN=2
 MAX_LEN=6
 STATS_FILE_GLOBAL='estadisticas.txt'
+
+# VARIABLES
+RETURN_ARRAY=$1
 
 clear
 
@@ -24,6 +38,7 @@ echo '                  Opciones                                           '
 echo
 echo '                      a) Cambiar longitud de combinacion             '
 echo '                      b) Cambiar fichero de estadisticas             '
+echo '                      c) Volver al menu principal                    '
 echo
 echo
 echo
@@ -32,7 +47,7 @@ while :
 do
     read -p '                  Seleccion: ' OPCION
 
-    while ! [[ "$OPCION" =~ ^[aAbB]$ ]]; do        
+    while ! [[ "$OPCION" =~ ^[aAbBcC]$ ]]; do        
         echo -en "\033[F\033[F" # Para que no se vea el \n, efecto estetico
         echo -n '                                        '
         echo -n '                                        '
@@ -96,13 +111,12 @@ do
 
             break
         ;;
+    
+        c)
+            RETURN_ARRAY[0]=$LENGTH
+            RETURN_ARRAY[1]=$STATFILE
+        ;;
     esac
 done
-
-# AQUI FALTA ESCRIBIR EN UN FICHERO TEMPORAL LOS RESULTADOS, LINEA A LINEA
-# PORQUE ES LA MANERA MAS FACIL DE PROCESARLOS. LA SOLUCION, TRAS COMPROBAR
-# PERMISOS EN EL DIRECTORIO, ETC., DEBE SER
-#       echo $LENGTH > nombreDelFichero
-#       echo $STATFILE >> nombreDelFichero
 
 exit 0
