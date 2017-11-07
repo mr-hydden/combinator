@@ -34,6 +34,7 @@
 CONFIG_FILE_GLOBAL='conf.cfg'
 CONFIG_FILE_PATH_GLOBAL=$PWD
 STATS_FILE_GLOBAL='estadisticas.txt'
+STATS_FILE_PATH_GLOBAL=$PWD
 declare -i N_PERM=2#000    # ---
 declare -i R_PERM=2#100    # r--
 declare -i W_PERM=2#010    # -w-
@@ -242,7 +243,7 @@ declare -i RWX_PERM=2#111  # rwx
     local CONFIG_FILE_PATH
     local CONFI_FILE_NAME
 
-    if [ $# -eq 2 ]; then
+    if [ $# -eq 1 ]; then
         
         # Separamos nombre y ruta del fichero para trabajarlos por separado
         CONFIG_FILE_PATH=$(echo $CONFIG_FILE | sed -n 's:\(.*\)/.*$:\1:p')
@@ -290,8 +291,8 @@ declare -i RWX_PERM=2#111  # rwx
             # escribimos el fichero en el formato adecuado
             if (( (( $FIL_PERM & $W_PERM )) != 0 )); then    
                 echo 'LONGITUD=0' | cat > "$CONFIG_FILE_NAME" # Se crea de cero
-                echo "ESTADISTICAS=$STATS_FILE_GLOBAL/estadisticas.txt" | \
-                                                    cat >> "$CONFIG_FILE_NAME"
+                echo "ESTADISTICAS=$STATS_FILE_PATH_GLOBAL/estadisticas.txt" |\
+                cat >> "$CONFIG_FILE_NAME"
 
                 return 0
             else
@@ -375,7 +376,7 @@ declare -i RWX_PERM=2#111  # rwx
         sed -i "s:ESTADISTICAS=.*:ESTADISTICAS=$NEW_STATS_FILE:" "$CONFIG_FILE"\
         &> /dev/null
         
-        return $? # Si el fichero no existe, devuelve 2. Si no, devuelve 0
+        return $? # Si hay algun problema, diferente de 0. Si no, devuelve 0
 
     else
         return 1 # Numero de argumentos no valido
@@ -454,7 +455,7 @@ declare -i RWX_PERM=2#111  # rwx
         sed -i "s:LONGITUD=.*:LONGITUD=$NEW_LENGTH:" "$CONFIG_FILE"\
         &> /dev/null
         
-        return $? # Si el fichero no existe, devuelve 2. Si no, devuelve 0
+        return $? # Si hay algun problema, diferente de 0. Si no, devuelve 0
 
     else
         return 1 # Numero de argumentos no valido
@@ -505,7 +506,7 @@ if (( $# == 3 || $# == 5 )); then
 
     # Comprobamos permisos del fichero; si no se puede escribir o leer, 
     # termina con error
-    declare -i FIL_PERM=$(perm "$STATS_FILE_NAME") 
+    declare -i FIL_PERM=$(perm "$CONFIG_FILE") 
     if ! (( (( $FIL_PERM & $RW_PERM )) != 0 )); then
         exit 3 # No podemos escribir o leer en el fichero
     fi
@@ -567,11 +568,11 @@ if (( $# == 3 || $# == 5 )); then
 
     # En otro caso, todo esta bien, se hacen los cambios pertinentes
     if [[ -n "$LENGTH" ]]; then
-        chlength "$CONFIG_FILE_PATH/$CONFIG_FILE_NAME" "$LENGTH"
+        chlength "$CONFIG_FILE" "$LENGTH"
     fi
 
     if [[ -n "$STATS_FILE" ]]; then
-        chpath "$CONFIG_FILE_PATH/$CONFIG_FILE_NAME" "$STATS_FILE"
+        chpath "$CONFIG_FILE" "$STATS_FILE"
     fi
 
     exit 0

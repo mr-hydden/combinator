@@ -220,6 +220,14 @@ if [ $# -eq 8 ]; then
     COMB_LENGTH=$7
     COMBINATION=$8
 
+    # '.' no es un wildcard para el globbing, asi que
+    # cambiamos '.' por $PWD, pues necesitamos rutas absolutas
+    STATS_FILE=$(echo $STATS_FILE | sed "s:\./\(.*\):$PWD/\1:")
+
+    if ! [[ $STATS_FILE =~ .*"/$STATS_FILE_GLOBAL" ]]; then
+        exit 2 # El fichero debe llamarse $STATS_FILE_GLOBAL
+    fi
+
     # Si el fichero no existe, lo creamos
     if ! [[ -e $STATS_FILE ]]; then
         init_stats_file $STATS_FILE
@@ -230,7 +238,7 @@ if [ $# -eq 8 ]; then
 
     # Comprobamos permisos del fichero; si no se puede escribir, 
     # termina con error
-    declare -i FIL_PERM=$(perm "$STATS_FILE_NAME") 
+    declare -i FIL_PERM=$(perm "$STATS_FILE") 
     if ! (( (( $FIL_PERM & $W_PERM )) != 0 )); then
         exit 2 # No podemos escribir en el fichero
     else
