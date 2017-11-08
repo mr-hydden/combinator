@@ -114,19 +114,30 @@ SHORT_LEN_SHORT_GAME=$( cat $STATS_FILE | head -n $SHORT_L_GAME_I | tail -n 1)
 LONG_LEN_SHORT_GAME=$( cat $STATS_FILE | head -n $LONG_L_GAME_I | tail -n 1)
 
 
-echo "Informacion partida:"
-echo -e "\tPID|FECHA|HORA|INTENTOS|TIEMPO|LONGITUD|COMBINACION"
-echo
-echo "Numero total partidas: $NO_GAMES partidas"
-echo "Longitud de combinacion media: $MEAN_LENGTH digitos"
-echo "Duracion media de juego: $MEAN_DURATION s"
-echo "Tiempo total de juego: $TOTAL_PLAY_TIME s"
-echo "Informacion juego mas corto: $SHORTEST"
-echo "Informacion juego mas largo: $LONGEST"
-echo "Informacion juego mas corto (combinacion mas corta)"
-echo -e "\t$SHORT_LEN_SHORT_GAME"
-echo "Informacion juego mas corto (combinacion mas larga)"
-echo -e "\t$LONG_LEN_SHORT_GAME"
+touch stats.tmp
 
+
+#echo "Informacion partida:"
+#echo -e "\tPID|FECHA|HORA|INTENTOS|TIEMPO|LONGITUD|COMBINACION"
+#echo
+#echo "Numero total partidas: $NO_GAMES partidas"
+#echo "Longitud de combinacion media: $MEAN_LENGTH digitos"
+#echo "Duracion media de juego: $MEAN_DURATION s"
+#echo "Tiempo total de juego: $TOTAL_PLAY_TIME s"
+#echo "Informacion juego mas corto: $SHORTEST"
+#echo "Informacion juego mas largo: $LONGEST"
+#echo "Informacion juego mas corto (combinacion mas corta)"
+#echo -e "\t$SHORT_LEN_SHORT_GAME"
+#echo "Informacion juego mas corto (combinacion mas larga)"
+#echo -e "\t$LONG_LEN_SHORT_GAME"
+
+echo "$NO_GAMES" | cat > stats.tmp
+echo "$MEAN_LENGTH" | cat >> stats.tmp
+echo "$MEAN_DURATION" | cat >> stats.tmp
+echo "$TOTAL_PLAY_TIME" | cat >> stats.tmp
+echo "$SHORTEST" | cat >> stats.tmp
+echo "$LONGEST" | cat >> stats.tmp
+echo "$SHORT_LEN_SHORT_GAME" | cat >> stats.tmp
+echo "$LONG_LEN_SHORT_GAME" | cat >> stats.tmp
 
 exit 0
