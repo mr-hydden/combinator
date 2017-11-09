@@ -1,15 +1,15 @@
 #!/bin/bash
 
-#******************************************************************************#
-#                               updatestats.sh                                 #
-#                                                                              #
-# Incorpora una nueva entrada con los datos de una partida al fichero de       #
-# estadisticas.
-#                                                                              #
-#******************************************************************************#
+#*****************************************************************************#
+#                               updatestats.sh                                #
+#                                                                             #
+# Incorpora una nueva entrada con los datos de una partida al fichero de      #
+# estadisticas.                                                               #
+#                                                                             #
+#*****************************************************************************#
 
 # Author: Samuel Gomez Sanchez
-# Date: 06/11/17
+# Date: 08/11/17
 # v3.0
 
 # Usage:
@@ -25,7 +25,7 @@
 #   G = Combinacion secreta del juego
 #
 # (en realidad la unica LIMITACION es el NUMERO DE LOS ARGUMENTOS. Internamente
-# trabaja con cadenas de texto, y las escribe en cualquier caso en el orden 
+# trabaja  con  cadenas  de  texto, y las escribe en cualquier caso en el orden 
 # en que se reciban).
 #
     # Exit status
@@ -59,12 +59,12 @@ declare -i RWX_PERM=2#111  # rwx
 
 
 
-#******************************************************************************#
-#                                   FUNCIONES                                  #
-#******************************************************************************#
-#                                   perm                                       #
-#                                   init_stats_file                            #
-#******************************************************************************#
+#*****************************************************************************#
+#                                   FUNCIONES                                 #
+#*****************************************************************************#
+#                                   perm                                      #
+#                                   init_stats_file                           #
+#*****************************************************************************#
 
 
 # ***********************************************
@@ -170,8 +170,8 @@ declare -i RWX_PERM=2#111  # rwx
             cd "$STATS_FILE_PATH"
 
             if ! [[ -e "$STATS_FILE_NAME" ]]; then
-                touch "$STATS_FILE_NAME"   # Como tenemos permisos W, se crea sin
-                                            # problema
+                touch "$STATS_FILE_NAME"   # Como tenemos permisos W, 
+                                           # se crea sin problema
             fi
                 
             # El modulo superior debe realizar la comprobacion 
@@ -194,10 +194,10 @@ declare -i RWX_PERM=2#111  # rwx
 }
 
 
-#******************************************************************************#
-#                               PROGRAMA PRINCIPAL                             #
-#                                 updatestats.sh                               #
-#******************************************************************************#
+#*****************************************************************************#
+#                               PROGRAMA PRINCIPAL                            #
+#                                 updatestats.sh                              #
+#*****************************************************************************#
 
     # Exit status
     #

@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#******************************************************************************#
-#                                   chconf.sh                                  #
-#                                                                              #
-# Modifica el fichero de configuracion, cambiando la longitud por defecto, el  #
-# fichero de estadisticas por defecto o ambos.                                 #
-#                                                                              #
-#******************************************************************************#
+#*****************************************************************************#
+#                                   chconf.sh                                 #
+#                                                                             #
+# Modifica el fichero de configuracion, cambiando la longitud por defecto, el #
+# fichero de estadisticas por defecto o ambos.                                #
+#                                                                             #
+#*****************************************************************************#
 
 # Author: Samuel Gomez Sanchez
 # Date: 07/11/17
@@ -47,16 +47,16 @@ declare -i RWX_PERM=2#111  # rwx
 
 
 
-#******************************************************************************#
-#                                   FUNCIONES                                  #
-#******************************************************************************#
-#                                   binpermf                                   #
-#                                   perm                                       #
-#                                   test_file_format                           #
-#                                   init_conf_file                             #
-#                                   chpath                                     #
-#                                   chlength                                   #
-#******************************************************************************#
+#*****************************************************************************#
+#                                   FUNCIONES                                 #
+#*****************************************************************************#
+#                                   binpermf                                  #
+#                                   perm                                      #
+#                                   test_file_format                          #
+#                                   init_conf_file                            #
+#                                   chpath                                    #
+#                                   chlength                                  #
+#*****************************************************************************#
 
 
 # ***********************************************
@@ -272,8 +272,8 @@ declare -i RWX_PERM=2#111  # rwx
             cd "$CONFIG_FILE_PATH"
 
             if ! [[ -e "$CONFIG_FILE_NAME" ]]; then
-                touch "$CONFIG_FILE_NAME"   # Como tenemos permisos W, se crea sin
-                                            # problema
+                touch "$CONFIG_FILE_NAME"   # Como tenemos permisos W, 
+                                            # se crea sin problema
             fi
 
             declare -i local FIL_PERM=$(perm "$CONFIG_FILE_NAME") 
@@ -352,8 +352,10 @@ declare -i RWX_PERM=2#111  # rwx
 
         # Separamos la ruta y el nombre del fichero, para poder trabajar con
         # perm y comprobar los permisos por separado
-#        local CONFIG_FILE_PATH=$(echo $CONFIG_FILE | sed -n 's:\(.*\)/.*$:\1:p')
-#        local CONFIG_FILE_NAME=$(echo $CONFIG_FILE | sed -n 's:.*/\(.*\)$:\1:p')
+#        local CONFIG_FILE_PATH=$(echo $CONFIG_FILE |\
+#                               sed -n 's:\(.*\)/.*$:\1:p')
+#        local CONFIG_FILE_NAME=$(echo $CONFIG_FILE |\
+#                               sed -n 's:.*/\(.*\)$:\1:p')
 
         
 #        if ! [[ -e "$CONFIG_FILE_PATH"/"$CONFIG_FILE_NAME" ]]; then
@@ -434,8 +436,10 @@ declare -i RWX_PERM=2#111  # rwx
 
         # Separamos la ruta y el nombre del fichero, para poder trabajar con
         # perm y comprobar los permisos por separado
-#        local CONFIG_FILE_PATH=$(echo $CONFIG_FILE | sed -n 's:\(.*\)/.*$:\1:p')
-#        local CONFIG_FILE_NAME=$(echo $CONFIG_FILE | sed -n 's:.*/\(.*\)$:\1:p')
+#        local CONFIG_FILE_PATH=$(echo $CONFIG_FILE |\
+#                               sed -n 's:\(.*\)/.*$:\1:p')
+#        local CONFIG_FILE_NAME=$(echo $CONFIG_FILE |\
+#                               sed -n 's:.*/\(.*\)$:\1:p')
 
         
 #        if [[ ! -e "$CONFIG_FILE_PATH"/"$CONFIG_FILE_NAME" ]]; then
