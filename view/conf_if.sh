@@ -100,7 +100,7 @@ do
 #            "$(dirname $PWD)/$CHCONF" "$(dirname $PWD)/$CONFIG_FILE_GLOBAL" \
 #            -l "$LENGTH"
 
-            break
+            continue
         ;;
 
         b)
@@ -125,13 +125,14 @@ do
 #            "$(dirname $PWD)/$CHCONF" "$(dirname $PWD)/$CONFIG_FILE_GLOBAL" \
 #            -s "$STATFILE"
 
-            break
+            continue
         ;;
     
         c)
-            echo "$LENGTH $STATFILE"
+            echo $LENGTH $STATSFILE
+            NEW_LENGTH=$LENGTH
+            NEW_STATS_FILE=$STATSFILE
+            break
         ;;
     esac
 done
-
-exit 0

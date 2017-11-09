@@ -26,6 +26,8 @@
 RELEASE_DATE=$(date +'%b-%Y')
 VERSION='v1.0'
 
+clear
+
 echo
 echo
 echo
