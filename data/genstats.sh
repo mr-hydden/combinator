@@ -33,8 +33,8 @@ LENGTH_POS=6    # Posicion del campo longitud en el formato
 DURATION_POS=5  # Posicion del campo tiempo de juego en el formato
                 # del fichero de estadisticas
 
-TEMP_FILE="$PWD/.stats.tmp"
-#ERROR_FILE="$PWD/.statserrlog.tmp" <---- Se ha dejado para debugging, aunque
+TEMP_FILE="$PWD/stats.tmp"
+#ERROR_FILE="$PWD/statserrlog.tmp"  <---- Se ha dejado para debugging, aunque
 #                                         tal  vez  se  podria  incluir en la
 #                                         version  final. Es un fichero en el
 #                                         que  se  registran  las  lineas mal
@@ -71,7 +71,7 @@ LONG_LEN_SHORT_GAME=        # Con la combinacion mas larga
 # ***********************************************
 # test_stats_format                             *
 # ***********************************************
-# Devuelve 0 si el formato del fichero $1 es el *
+# Devuelve 0 si el formato de la linea $1 es el *
 # adecuado, y diferente de 0 si no lo es.       *
 #                                               *
             function test_line_format() {                         
@@ -85,8 +85,12 @@ LONG_LEN_SHORT_GAME=        # Con la combinacion mas larga
     #   2 si la linea no tiene el formato adecuado
 
 # Formato de cada linea del fichero de estadisticas
-    local DATA_FORMAT='^[0-9][0-9]*|.*|.*|[0-9][0-9]*|[0-9][0-9]*|\
-[0-9][0-9]*|[0-9][0-9]*$'
+    local DATA_FORMAT='^[0-9][0-9]*|' # PID
+    DATA_FORMAT+='.*|.*|'             # Fecha y hora
+    DATA_FORMAT+='[0-9][0-9]*|'       # Numero de intentos
+    DATA_FORMAT+='[0-9][0-9]*|'       # Tiempo de juego
+    DATA_FORMAT+='[0-9][0-9]*|'       # Longitud de la combinacion
+    DATA_FORMAT+='[0-9][0-9]*$'       # Combinacion
 
 # Si una linea no tiene ese formato, esta mal
     if [[ $# == 1 ]]; then
@@ -124,33 +128,45 @@ if (( $# == 1)); then
                # y devuelve error
     fi 
 
-    # Calculamos con el numero de juego (coincidente con el numero de lineas)
+    # Calculamos con el numero de juego (coincidente con el numero de lineas,
+    # en principio. Si hay lineas con formato incorrecto, se corregira)
     NO_GAMES=$(cat $STATS_FILE | wc -l)
 
 
-    # Inicializamos
+# Inicializamos -------------------------------------------------------------//
+
     MEAN_LENGTH=0
     MEAN_DURATION=0
     TOTAL_PLAY_TIME=0
 
     # Seria facil asignar la primera linea, pero si el formato es incorrecto
     # no nos interesa
-    FORMAT_OK=
     LINE=1
-    until (($FORMAT_OK == 0)); do
+    while :
+    do
         test_line_format $(cat $STATS_FILE | head -"$LINE" | tail -1)
-        if (( $? != 0)); then
-            FORMAT_OK=1
+        if (( $? == 0 )); then
+            break            
+        else    
             LINE=$(($LINE+1))
-        else
-            FORMAT_OK=0
         fi
     done
         
-    MIN_DURATION=$( cat $STATS_FILE | head -"$LINE" | cut -f $DURATION_POS -d "|" )
-    MAX_DURATION=$( cat $STATS_FILE | head -"$LINE" | cut -f $DURATION_POS -d "|" )
-    MIN_LENGTH=$( cat $STATS_FILE | head -"$LINE" | cut -f $LENGTH_POS -d "|" )
-    MAX_LENGTH=$( cat $STATS_FILE | head -"$LINE" | cut -f $LENGTH_POS -d "|" )
+    MIN_DURATION=$(cat $STATS_FILE | \
+                   head -"$LINE" | \
+                   cut -f $DURATION_POS -d "|")
+
+    MAX_DURATION=$(cat $STATS_FILE | \
+                   head -"$LINE" | \
+                   cut -f $DURATION_POS -d "|")
+
+    MIN_LENGTH=$(cat $STATS_FILE | \
+                 head -"$LINE" | \
+                 cut -f $LENGTH_POS -d "|")
+
+    MAX_LENGTH=$(cat $STATS_FILE | \
+                 head -"$LINE" | \
+                 cut -f $LENGTH_POS -d "|")
 
     MIN_LENGTH_I=$LINE   # Linea que contiene partida mas larga, corta, etc.
     MAX_LENGTH_I=$LINE   #
@@ -171,6 +187,9 @@ if (( $# == 1)); then
     #    fi
     #fi
 
+# Fin inicializacion --------------------------------------------------------//
+
+
 
     # Recorremos linea a linea, haciendo:
         # Sumar longitudes, para calcular media
@@ -179,6 +198,7 @@ if (( $# == 1)); then
         # Buscar longitud maxima y minima, para luego buscar
             # partidas mas cortas para ambas
     I=1
+    WRONG_LINES_NO=0
     while (( $I <= $NO_GAMES )); do
 
         # Si el formato de una linea no es adecuado, la saltamos
@@ -186,7 +206,7 @@ if (( $# == 1)); then
         test_line_format "$LINE"
         if (( $? != 0 )); then
             I=$(($I+1))
-            NO_GAMES=$(($NO_GAMES-1))
+            WRONG_LINES_NO=$(($WRONG_LINES_NO+1))
         #echo $LINE | cat >> $ERROR_FILE <---- Esto se podria incluir en la
         #                                      version   final,  o  dejarlo
         #                                      como lo tengo para debugging                                 
@@ -237,6 +257,12 @@ if (( $# == 1)); then
     # maxima y minima, las partidas mas cortas para ambos casos
     I=1
     while (( $I <= $NO_GAMES )); do
+        
+        test_line_format $(cat $STATS_FILE | head -"$I" | tail -1)
+        if (( $? != 0 )); then
+            I=$(($I+1))
+            continue        
+        fi
 
         LINE_LENGTH=$(cat $STATS_FILE |\
                       head -"$I" |\
@@ -244,7 +270,7 @@ if (( $# == 1)); then
                       cut -f $LENGTH_POS -d "|")
 
         LINE_DURATION=$(cat $STATS_FILE |\
-                        head -"$I" |\ 
+                        head -"$I" |\
                         tail -1 |\
                         cut -f $DURATION_POS -d "|")
 
@@ -264,6 +290,9 @@ if (( $# == 1)); then
 
     done
     
+    # Calculamos numero de juegos en funcion de las lineas erroneas
+    NO_GAMES=$(($NO_GAMES-$WRONG_LINES_NO))
+
     # Calculamos longitud media
     MEAN_LENGTH=$((MEAN_LENGTH / $NO_GAMES))
     
