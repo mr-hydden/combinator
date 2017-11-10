@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-#***********VARIABLES**************
+#***********CONSTANTES**************
 
 RELEASE_DATE=$(date +'%b-%Y')
 VERSION='v1.0'
@@ -12,6 +12,14 @@ declare -a ACIERTOS
 long=3       #Longitud provisional
 MIN_LENGTH=2
 MAX_LENGTH=6
+
+#***********PATH MACROS**************
+GAME_IF_PATH="$PWD/view/game_if.sh"
+CONF_IF_PATH="$PWD/view/conf_if.sh"
+STATS_IF_PATH="$PWD/view/statistics_if.sh"
+GROUP_IF_PATH="$PWD/view/group_if.sh"
+CHCONF_PATH="$PWD/data/chconf-comp.sh"
+CONFIG_FILE_PATH="$PWD/conf.cfg"
 
 export NEW_LENGTH=      # Es esto o crear un fichero temporal. Porque si
 export NEW_STATS_FILE=  # conf_if se ejecuta en una subshell, no podemos
@@ -43,9 +51,11 @@ MENU_TITLE='****************************************'
 MENU_TITLE+='***************************************'
 MENU_TITLE+='                                        '
 MENU_TITLE+='                                       '
-MENU_TITLE+='                                   '
+MENU_TITLE+='*                                  '
 MENU_TITLE+='COMBINATOR'
-MENU_TITLE+='                                   '
+MENU_TITLE+='                                  *'
+MENU_TITLE+='                                        '
+MENU_TITLE+='                                       '
 MENU_TITLE+='****************************************'
 MENU_TITLE+='***************************************'
 
@@ -55,14 +65,17 @@ while (( $END == 0)); do
     
     clear    
 
-    echo -n '***********************************'
-    echo '***********************************'
-    echo -n '*                             '
+    echo -n '****************************************'
+    echo '***************************************'
+    echo -n '*                                       '
+    echo '                                      *'
+    echo -n '*                                  '
     echo -n 'COMBINATOR'
-    echo '                             *'
-    echo -n '***********************************'
-    echo '***********************************'
-    echo
+    echo '                                 *'
+    echo -n '*                                       '
+    echo '                                      *'
+    echo -n '****************************************'
+    echo '***************************************'
     echo
 
     echo '    J) JUGAR'
@@ -74,21 +87,32 @@ while (( $END == 0)); do
 
     case "$OPCION" in
         'J' | 'j')
-            "$PWD/view/game_if.sh"       
+            $GAME_IF_PATH
+            continue
         ;;
 
         'C' | 'c')
-            source "$PWD/view/conf_if.sh"
-            echo $NEW_LENGTH $NEW_STATS_FILE
-            sleep 20
+            source "$CONF_IF_PATH"
+
+            if [[ -n "$NEW_LENGTH" ]]; then
+                "$CHCONF_PATH" "$CONFIG_FILE_PATH" -l "$NEW_LENGTH"
+            fi
+
+            if [[ -n "$NEW_STATS_FILE" ]]; then
+                "$CHCONF_PATH" "$CONFIG_FILE_PATH" -s "$NEW_STATS_FILE"
+            fi
+
+            continue
         ;;
 
         'E' | 'e')
-            "$PWD/view/statistics_if.sh"
+            "$STATS_IF_PATH"
+            continue
         ;;
 
         'G' | 'g')
-            "$PWD/view/group_if.sh"
+            "$GROUP_IF_PATH"
+            continue
         ;;
 
         'S' | 's')
@@ -99,8 +123,8 @@ while (( $END == 0)); do
 
         *)
             echo 'OPCION INCORRECTA . Intentelo de nuevo'
-            echo Reconectando...
-            sleep 5
+            echo 'Reconectando...'
+            sleep 1
         ;;
 
     esac   

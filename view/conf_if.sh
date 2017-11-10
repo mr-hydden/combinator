@@ -33,103 +33,95 @@ MAX_LEN=6
 STATS_FILE_GLOBAL='estadisticas.txt'
 
 
+    function clprevln(){ # Para funcionar sobre una terminal de 80 caracteres
+                         # de ancho
+        echo -en "\033[F"
+        echo -n '                                        ' # 40 espacios
+        echo '                                       '     # 39 espacios
+        echo -en "\033[F"
+    }
+
+
 clear
 
 echo
 echo
+echo '                                                                        '
+echo '                                 CONFIGURACION                          '
+echo '                                                                        '
 echo
-echo
-echo '                                                                         '
-echo '                                 CONFIGURACION                           '
-echo '                                                                         '
-echo
-echo '          Cambie la longitud de  combinacion  para  aumentar la          '
-echo '          dificultad del juego. Si desea almacenar sus datos de          '
-echo '          juego  en  otro  fichero  de estadisticas, introduzca          '
+echo '          Cambie la longitud de  combinacion  para  aumentar la         '
+echo '          dificultad del juego. Si desea almacenar sus datos de         '
+echo '          juego  en  otro  fichero  de estadisticas, introduzca         '
 echo '          nueva ruta.'
-echo 
+echo '          Puede  realizar los cambios que desee.  Solo se haran         '
+echo '          efectivos una vez regrese al menu principal.                  '
 echo
-echo '                  Opciones                                           '
+echo '                  Opciones                                              '
 echo
-echo '                      a) Cambiar longitud de combinacion             '
-echo '                      b) Cambiar fichero de estadisticas             '
-echo '                      c) Volver al menu principal                    '
+echo '                      a) Cambiar longitud de combinacion                '
+echo '                      b) Cambiar fichero de estadisticas                '
+echo '                      c) Volver al menu principal                       '
 echo
 echo
 echo
 
 while :
 do
-    read -p '                  Seleccion: ' OPCION
+    read -p '              Seleccion: ' OPTION
 
-    while ! [[ "$OPCION" =~ ^[aAbBcC]$ ]]; do        
-        echo -en "\033[F\033[F" # Para que no se vea el \n, efecto estetico
-        echo -n '                                        '
-        echo -n '                                        '
-        echo -n '                                        '
-        echo -n '                                        '
-        echo -en "\033[F\033[F"
+    while ! [[ "$OPTION" =~ ^[aAbBcC]$ ]]; do        
+        clprevln; clprevln # Necesitamos otra linea
         echo '                  Opcion incorrecta. Introduzca una opcion valida.'
-        read -p '                  Seleccion: ' OPCION
+        read -p '              Seleccion: ' OPTION
     done
-    
-    echo -en "\033[F\033[F"
-    echo -n '                                        '
-    echo -n '                                        '
-    echo -n '                                        '
-    echo -n '                                        '
-    echo -en "\033[F"
 
-    case $OPCION in
+    clprevln; clprevln # Limpiamos lo escrito y nos situamos al principio
+    echo
+
+    case $OPTION in
         a )
-            read -p '                  Nueva longitud: ' LENGTH
+            read -p '              Nueva longitud: ' LENGTH
 
             while ! [[ "$LENGTH" =~ ^[0-9]$ && 
                        "$LENGTH" -ge "$MIN_LEN" && 
                        "$LENGTH" -le "$MAX_LEN"  ]]
             do
-                echo -en "\033[F"
-                echo -n '                                        '
-                echo -n '                                        '
-                echo -en "\033[F"
-                read -p '                  Introduzca un valor entre 2 y 6: ' LENGTH
+                clprevln
+                read -p '              Introduzca un valor entre 2 y 6: ' LENGTH
             done
-
-# ESTO ES TAREA DEL CONTROLADOR, PERO COMPROBADO QUE FUNCIONA
-            # Llevamos a cabo el cambio de longitud
-#            "$(dirname $PWD)/$CHCONF" "$(dirname $PWD)/$CONFIG_FILE_GLOBAL" \
-#            -l "$LENGTH"
+            
+            clprevln # Limpiamos lo escrito
+            clprevln            
+            echo -n '              Cambio almacenado. '
+            echo 'Para confirmarlo, vuelva al menu principal'            
 
             continue
         ;;
 
         b)
-            read -p '                  Nuevo fichero de estadisticas: ' STATFILE
+            read -p '              Nuevo fichero de estadisticas: ' STATSFILE
 
-            while ! [[ "$STATFILE" =~ .*/?"$STATS_FILE_GLOBAL" ]]; do
-                echo -en "\033[F\033[F\033[F"
-                echo -n '                                        '
-                echo -n '                                        '
-                echo -n '                                        '
-                echo -n '                                        '
-                echo -n '                                        '
-                echo -n '                                        '
-                echo -en "\033[F\033[F\033[F"
-                echo '          El nombre del fichero de configuracion debe ser: '
-                echo "                          $STATS_FILE_GLOBAL"
-                read -p '          Introduzca un fichero valido: ' STATFILE
+            while ! [[ "$STATSFILE" =~ .*/?"$STATS_FILE_GLOBAL" ]]; do
+                
+                clprevln; clprevln # Necesitamos dos lineas
+
+                echo -n "      El nombre del fichero de configuracion debe ser: "
+                echo "'$STATS_FILE_GLOBAL'"
+                read -p '      Introduzca un fichero valido: ' STATSFILE
             done
+            
+            clprevln; clprevln # Limpiamos lo escrito y nos situamos
+            echo
 
-# ESTO ES TAREA DEL CONTROLADOR, PERO COMPROBADO QUE FUNCIONA
-            # Llevamos a cabo el cambio de fichero de estadisticas
-#            "$(dirname $PWD)/$CHCONF" "$(dirname $PWD)/$CONFIG_FILE_GLOBAL" \
-#            -s "$STATFILE"
+            clprevln            
+            echo -n '              Cambio almacenado. '
+            echo 'Para confirmarlo, vuelva al menu principal'
 
             continue
         ;;
     
         c)
-            echo $LENGTH $STATSFILE
             NEW_LENGTH=$LENGTH
             NEW_STATS_FILE=$STATSFILE
             break

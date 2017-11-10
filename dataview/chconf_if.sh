@@ -45,6 +45,9 @@ declare -i RX_PERM=2#101   # r-x
 declare -i RWX_PERM=2#111  # rwx
 
 
+# Variables globales
+NEW_LENGTH_G=
+NEW_STATS_FILE_G=
 
 
 #*****************************************************************************#
@@ -57,6 +60,132 @@ declare -i RWX_PERM=2#111  # rwx
 #                                   chpath                                    #
 #                                   chlength                                  #
 #*****************************************************************************#
+
+
+
+function clprevln(){ # Para funcionar sobre una terminal de 80 caracteres
+                         # de ancho
+    echo -en "\033[F"
+    echo -n '                                        ' # 40 espacios
+    echo '                                       '     # 39 espacios
+    echo -en "\033[F"
+}
+
+
+
+#******************************************************************************#
+#                                   conf_if.sh                                 #
+#                                                                              #
+# Muestra una interfaz de configuracion y toma datos del usuario               #
+#                                                                              #
+    function conf_if(){
+#******************************************************************************#
+
+    # Return value
+    #
+    #   0
+    #
+    
+# Devuelve los datos recogidos en las variables globales NEW_LENGTH_G
+# y NEW_STATS_FILE_G
+
+# Constantes
+MIN_LEN=2
+MAX_LEN=6
+
+
+    clear
+
+    echo
+    echo
+    echo '                                                                        '
+    echo '                                 CONFIGURACION                          '
+    echo '                                                                        '
+    echo
+    echo '          Cambie la longitud de  combinacion  para  aumentar la         '
+    echo '          dificultad del juego. Si desea almacenar sus datos de         '
+    echo '          juego  en  otro  fichero  de estadisticas, introduzca         '
+    echo '          nueva ruta.'
+    echo '          Puede  realizar los cambios que desee.  Solo se haran         '
+    echo '          efectivos una vez regrese al menu principal.                  '
+    echo
+    echo '                  Opciones                                              '
+    echo
+    echo '                      a) Cambiar longitud de combinacion                '
+    echo '                      b) Cambiar fichero de estadisticas                '
+    echo '                      c) Volver al menu principal                       '
+    echo
+    echo
+    echo
+
+    while :
+    do
+        read -p '              Seleccion: ' OPTION
+
+        while ! [[ "$OPTION" =~ ^[aAbBcC]$ ]]; do        
+            clprevln; clprevln # Necesitamos otra linea
+            echo '                  Opcion incorrecta. Introduzca una opcion valida.'
+            read -p '              Seleccion: ' OPTION
+        done
+
+        clprevln; clprevln # Limpiamos lo escrito y nos situamos al principio
+        echo
+
+        case $OPTION in
+            a )
+                read -p '              Nueva longitud: ' LENGTH
+
+                while ! [[ "$LENGTH" =~ ^[0-9]$ && 
+                           "$LENGTH" -ge "$MIN_LEN" && 
+                           "$LENGTH" -le "$MAX_LEN"  ]]
+                do
+                    clprevln
+                    read -p '              Introduzca un valor entre 2 y 6: ' LENGTH
+                done
+                
+                clprevln # Limpiamos lo escrito
+                clprevln            
+                echo -n '              Cambio almacenado. '
+                echo 'Para confirmarlo, vuelva al menu principal'            
+
+                continue
+            ;;
+
+            b)
+                read -p '              Nuevo fichero de estadisticas: ' STATSFILE
+
+                while ! [[ "$STATSFILE" =~ .*/?"$STATS_FILE_DEFAULT" ]]; do
+                    
+                    clprevln; clprevln # Necesitamos dos lineas
+
+                    echo -n "      El nombre del fichero de configuracion debe ser: "
+                    echo "'$STATS_FILE_DEFAULT'"
+                    read -p '      Introduzca un fichero valido: ' STATSFILE
+                done
+                
+                clprevln; clprevln # Limpiamos lo escrito y nos situamos
+                echo
+
+                clprevln            
+                echo -n '              Cambio almacenado. '
+                echo 'Para confirmarlo, vuelva al menu principal'
+
+                continue
+            ;;
+        
+            c)
+                NEW_LENGTH=$LENGTH
+                NEW_STATS_FILE=$STATSFILE
+                break
+            ;;
+        esac
+    done
+
+    return 0
+}
+
+
+
 
 
 # ***********************************************
@@ -480,12 +609,19 @@ declare -i RWX_PERM=2#111  # rwx
 }
 
 
-#******************************************************************************#
-#                               PROGRAMA PRINCIPAL                             #
-#                                   chconf.sh                                  #
-#******************************************************************************#
+# ***********************************************
+# chconf()                                      *
+# ***********************************************
+# Funcion que modifica el fichero de            *
+# Estadisticas segun se le indique              *
+#                                               *
+            function chconf() {                         
+# ***********************************************
+    # Usage:
+    #   chconf.sh CONFIGURATION_FILE [-l newlength | -s path/to/stats/file]
+    #
 
-    # Exit status:
+    # Return:
     #
     #   0 si tiene exito
     #
@@ -497,9 +633,9 @@ declare -i RWX_PERM=2#111  # rwx
     #
     #   4 formato de fichero de configuracion incorrecto
         
-CONFIG_FILE=
-LENGTH=
-STATS_FILE=
+local CONFIG_FILE
+local LENGTH
+local STATS_FILE
 
 # Los formatos de llamada son 
 #   a) chconf.sh CONFIGURATION_FILE -l N
@@ -517,7 +653,7 @@ if (( $# == 3 || $# == 5 )); then
     if ! [[ -e "$CONFIG_FILE" ]]; then
         init_conf_file "$CONFIG_FILE"
         if [[ $? -ne 0 ]]; then
-            exit 3 # Error en la creacion del fichero
+            return 3 # Error en la creacion del fichero
         fi
     fi
 
@@ -525,7 +661,7 @@ if (( $# == 3 || $# == 5 )); then
     # termina con error
     declare -i FIL_PERM=$(perm "$CONFIG_FILE") 
     if ! (( (( $FIL_PERM & $RW_PERM )) != 0 )); then
-        exit 3 # No podemos escribir o leer en el fichero
+        return 3 # No podemos escribir o leer en el fichero
     fi
 
     # Si el fichero existe, pero no tiene el formato adecuado, se termina
@@ -534,7 +670,7 @@ if (( $# == 3 || $# == 5 )); then
     # oportuno.
     test_file_format "$CONFIG_FILE"
     if (( $? != 0 )); then
-        exit 4 # Formato de fichero incorrecto
+        return 4 # Formato de fichero incorrecto
     fi
     
     # Parseamos el resto de argumentos. Para esta funcion se ha hecho con
@@ -551,7 +687,7 @@ if (( $# == 3 || $# == 5 )); then
                     LENGTH=$2
                     shift 2
                 else
-                    exit 1 # Error de formato de argumentos
+                    return 1 # Error de formato de argumentos
                 fi
             ;;
             
@@ -562,12 +698,12 @@ if (( $# == 3 || $# == 5 )); then
                     STATS_FILE=$(echo $2 | sed "s:\./\(.*\):$PWD/\1:")
                     shift 2
                 else
-                    exit 1 # Error de formato de argumentos
+                    return 1 # Error de formato de argumentos
                 fi
             ;;
 
             -*)
-                exit 2 # Opcion inexistente
+                return 2 # Opcion inexistente
             ;;
         
             *)
@@ -580,7 +716,7 @@ if (( $# == 3 || $# == 5 )); then
     # con el formato adecuado, por ejemplo chconf.sh -l N foo bar), estos
     # son erroneos, y se termina con codigo de error
     if (( $# > 0 )); then
-        exit 1 # Argumentos erroneos
+        return 1 # Argumentos erroneos
     fi
 
     # En otro caso, todo esta bien, se hacen los cambios pertinentes
@@ -592,8 +728,23 @@ if (( $# == 3 || $# == 5 )); then
         chpath "$CONFIG_FILE" "$STATS_FILE"
     fi
 
-    exit 0
+    return 0
 
 else
-    exit 1 # Numero de argumentos invalido
+    return 1 # Numero de argumentos invalido
 fi
+
+}
+
+###############################################################################
+conf_if
+
+if [[ -n $NEW_LENGTH_G ]]; then
+    chconf $1 -l $NEW_LENGTH_G
+fi
+
+if [[ -n $NEW_STATS_FILE_G ]]; then
+    chconf $1 -s $NEW_STATS_FILE_G
+fi
+
+exit 0
