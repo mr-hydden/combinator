@@ -33,13 +33,14 @@ MAX_LEN=6
 STATS_FILE_GLOBAL='estadisticas.txt'
 
 
-    function clprevln(){ # Para funcionar sobre una terminal de 80 caracteres
-                         # de ancho
-        echo -en "\033[F"
-        echo -n '                                        ' # 40 espacios
-        echo '                                       '     # 39 espacios
-        echo -en "\033[F"
-    }
+
+function clprevln(){ # Para funcionar sobre una terminal de 80 caracteres
+                     # de ancho
+    echo -en "\033[F"
+    echo -n '                                        ' # 40 espacios
+    echo '                                       '     # 39 espacios
+    echo -en "\033[F"
+}
 
 
 clear

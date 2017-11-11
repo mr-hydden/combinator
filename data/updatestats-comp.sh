@@ -8,10 +8,6 @@
 #                                                                             #
 #*****************************************************************************#
 
-# Author: Samuel Gomez Sanchez
-# Date: 08/11/17
-# v3.0
-
 # Usage:
 #   updatestats.sh STATS_FILE A B C D E F G
 #
